@@ -29,7 +29,8 @@ Bon l'étape 5 nous sert à rien puisqu'on a qu'un seul type d'objet (faut qu'on
 Sinon pour l'étape 3, le temps de retournement on le fixe à un temps quelconque ?  
 D'après ce que je comprends, il n'y a pas d'acquittement (ACK). On peut toujours le rajouter pour le plaisir.
 
-Pour l'implémentation, puisque que la transmission d'objets est basé sur du broadcast, il faut faire notre émulation soit sur de l'UDP (TCP supporte pas le broadcast logiquement). Vu qu'on a qu'un seul type d'objet, conso/producteur on peut aussi le faire en TCP (on aura une liste des IP) mais je pense qu'on perd une des idées du protocole qui est que les prod/conso ne connaissent pas qui est là et balance sur le réseau leurs objets.
+Pour l'implémentation, puisque que la transmission d'objets est basé sur du broadcast, il faut faire notre émulation soit sur de l'UDP (TCP supporte pas le broadcast logiquement). Vu qu'on a qu'un seul type d'objet, conso/producteur on peut aussi le faire en TCP (on aura une liste des IP) mais je pense qu'on perd une des idées du protocole qui est que les prod/conso ne connaissent pas qui est là et balance sur le réseau leurs objets.  
+Dans le même sujet, est-ce qu'on fait en Wifi ad-hoc ou infrastructure (lolz) ?
 
 Pour la forme des différentes trames (qu'on voit dans le cours de Zoubir. D'ailleurs, c'est pas exactement les mêmes que dans l'autre document, génial non ?), j'ai commencé à définir un objet dans `frame.py`, regarde les commentaires et dis-moi ce que tu en penses.
 
