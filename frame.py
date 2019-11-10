@@ -1,22 +1,48 @@
+import struct
+
+
 class Frame:
+    DEFAULT_INIT_SEQUENCE = 42  # à définir : séquence de début de trame sur 2 octets
+    DEFAULT_END_SEQUENCE = 42  # à définir : séquence de fin de trame sur 2 octets
+
     def __init__(self):
-        self._FrameInitSeq = None # à définir : séquence de début de trame sur 2 octets
-        self._FrameEndSeq = None # à définir : séquence de fin de trame sur 2 octets
+        self._FrameInitSeq = self.DEFAULT_INIT_SEQUENCE
+        self._FrameEndSeq = self.DEFAULT_END_SEQUENCE
+
+    def get_repr(self):
+        raise NotImplementedError('A frame must implement a binary *representation*')
 
 
-
-# Trame de l'arbitre de bus
 class ID_Dat(Frame):
-    def __init__(self, _id):
-        super().__init__()
-        self._FrameType = 'ID-Dat' # On a le type ID-Dat ou RP-Dat sur 1 octet, à voir comment on le définit
-        self._Id = _id # sur 2 octets
+    '''
+    Trame envoyée par l'arbitre de bus pour indiqué l'objet à transmettre
+    '''
+    ID_Dat = b'I'
+
+    def __init__(self, _id: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._FrameType = ID_Dat
+        self._Id = _id
+
+    def get_repr(self):
+        fmt = 'hchc'
+        vals = (self._FrameInitSeq, self._FrameType, self._Id, self._FrameEndSeq)
+        return struct.pack(fmt, *vals)
 
 
-
-# Trame de producteur
 class RP_Dat(Frame):
-    def __init__(self, data):
-        super().__init__()
-        self._FrameType = 'RP-Dat' # Cf ID_dat._FrameType
-        self._Data = data # Données transférées, 128 octets max (taille non fixe)
+    '''
+    Trame envoyée par les producteur en réponse à une trame ID_Dat
+    '''
+    RP_Dat = b'D'
+
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._FrameType = RP_Dat
+        self._Data = data  # Données transférées, 128 octets max (taille non fixe)
+
+    def get_repr(self):
+        n = 128
+        fmt = f'hc{n}sc'
+        vals = (self._FrameInitSeq, self._FrameType, self._Data, self._FrameEndSeq)
+        return struct.pack(fmt, *vals)
