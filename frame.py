@@ -1,48 +1,85 @@
 import struct
+from abc import ABC, abstractmethod
 
 
-class Frame:
+class Frame(ABC):
     DEFAULT_INIT_SEQUENCE = 42  # à définir : séquence de début de trame sur 2 octets
-    DEFAULT_END_SEQUENCE = 42  # à définir : séquence de fin de trame sur 2 octets
+    DEFAULT_END_SEQUENCE = b'\042'  # à définir : séquence de fin de trame sur 1 octets
 
-    def __init__(self):
-        self._FrameInitSeq = self.DEFAULT_INIT_SEQUENCE
-        self._FrameEndSeq = self.DEFAULT_END_SEQUENCE
+    def __init__(self, type: bytes):
+        self._init_sequence = self.DEFAULT_INIT_SEQUENCE
+        self._end_sequence = self.DEFAULT_END_SEQUENCE
+        assert len(type) == 1, 'The type of a frame must be one byte'
+        self._type = type
 
+    def __repr__(self):
+        return str(self.__dict__)
+
+    @abstractmethod
     def get_repr(self):
-        raise NotImplementedError('A frame must implement a binary *representation*')
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_repr(cls, repr: bytes):
+        raise NotImplementedError('Frame does not exists, use a concrete frame instead')
 
 
 class ID_Dat(Frame):
     '''
     Trame envoyée par l'arbitre de bus pour indiqué l'objet à transmettre
     '''
-    ID_Dat = b'I'
+    TYPE = b'I'
 
-    def __init__(self, _id: int, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._FrameType = ID_Dat
-        self._Id = _id
+    def __init__(self, id: int, *args, **kwargs):
+        super().__init__(self.TYPE, *args, **kwargs)
+        self._id = id
 
     def get_repr(self):
-        fmt = 'hchc'
-        vals = (self._FrameInitSeq, self._FrameType, self._Id, self._FrameEndSeq)
+        fmt = f'hchc'
+        vals = (self._init_sequence, self._type, self._id, self._end_sequence)
         return struct.pack(fmt, *vals)
+
+    @classmethod
+    def from_repr(cls, repr: bytes):
+        fmt = f'hchc'
+        _, type, id, _ = struct.unpack(fmt, repr)
+        assert type == cls.TYPE, 'Bad frame type'
+        return cls(id)
 
 
 class RP_Dat(Frame):
     '''
     Trame envoyée par les producteur en réponse à une trame ID_Dat
     '''
-    RP_Dat = b'D'
+    TYPE = b'D'
 
-    def __init__(self, data, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._FrameType = RP_Dat
-        self._Data = data  # Données transférées, 128 octets max (taille non fixe)
+    def __init__(self, data: bytes, *args, **kwargs):
+        super().__init__(self.TYPE, *args, **kwargs)
+        self.data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data: bytes):
+        '''
+        Contenu de la trame (128 bytes max)
+        '''
+        assert len(data) <= 128, 'RP_Dat frame data must be <= 128 bytes'
+        self._data = data
 
     def get_repr(self):
-        n = 128
-        fmt = f'hc{n}sc'
-        vals = (self._FrameInitSeq, self._FrameType, self._Data, self._FrameEndSeq)
+        fmt = f'hc{len(self._data)}sc'
+        vals = (self._init_sequence, self._type, self.data, self._end_sequence)
         return struct.pack(fmt, *vals)
+
+    @classmethod
+    def from_repr(cls, repr: bytes):
+        fmt = f'hc{0}sc'
+        size = len(repr) - struct.calcsize(fmt)
+        fmt = f'hc{size}sc'
+        _, type, data, _ = struct.unpack(fmt, repr)
+        assert type == cls.TYPE, 'Bad frame type'
+        return cls(data)
