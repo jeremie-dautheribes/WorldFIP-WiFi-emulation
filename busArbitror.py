@@ -47,3 +47,13 @@ class BusArbitror(object):
         for i, p in table.items():
             pass
 
+
+if __name__ == '__main__':
+    bus = BusArbitror({
+        101: 100,
+        102: 200,
+        103: 500,
+        104: 100,
+        105: 200,
+    })
+    bus.do_loop()
