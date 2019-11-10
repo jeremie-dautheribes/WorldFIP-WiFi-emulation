@@ -83,3 +83,20 @@ class RP_Dat(Frame):
         _, type, data, _ = struct.unpack(fmt, repr)
         assert type == cls.TYPE, 'Bad frame type'
         return cls(data)
+
+
+if __name__ == '__main__':
+    # f = Frame()
+    f1 = ID_Dat(666)
+    print(f1)
+    r = f1.get_repr()
+    f2 = type(f1).from_repr(r)
+    print(f2)
+
+    print('===============')
+
+    f1 = RP_Dat(b'0123456789')
+    print(f1)
+    r = f1.get_repr()
+    f2 = type(f1).from_repr(r)
+    print(f2)
