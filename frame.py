@@ -35,6 +35,10 @@ class ID_Dat(Frame):
         super().__init__(self.TYPE, *args, **kwargs)
         self._id = id
 
+    @property
+    def id(self):
+        return self._id
+
     def get_repr(self):
         fmt = f'hchc'
         vals = (self._init_sequence, self._type, self._id, self._end_sequence)
@@ -44,8 +48,13 @@ class ID_Dat(Frame):
     def from_repr(cls, repr: bytes):
         fmt = f'hchc'
         _, type, id, _ = struct.unpack(fmt, repr)
-        assert type == cls.TYPE, 'Bad frame type'
+        assert type == cls.TYPE, f'Bad frame type, expected {cls.TYPE}, got {type}'
         return cls(id)
+
+    @classmethod
+    def size(cls):
+        '''The ID_Dat frame is represented with 7 bytes'''
+        return 7
 
 
 class RP_Dat(Frame):
@@ -83,6 +92,11 @@ class RP_Dat(Frame):
         _, type, data, _ = struct.unpack(fmt, repr)
         assert type == cls.TYPE, 'Bad frame type'
         return cls(data)
+
+    @classmethod
+    def size(cls):
+        '''The RP_Dat frame is represented with 5 + `n` bytes where `n` vary'''
+        return 6 + 128
 
 
 if __name__ == '__main__':
