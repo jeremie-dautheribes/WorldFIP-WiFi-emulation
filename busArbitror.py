@@ -17,6 +17,7 @@ class BusArbitror(object):
     def __init__(self, table={}):
         self._table = table
         self._microcycle, self._macrocycle = self.cycles_from_table(table)
+        self._time_quantum = 1000
 
     def run_server(self, port=5432):
         self._sock = socket(AF_INET, SOCK_DGRAM)
@@ -43,6 +44,7 @@ class BusArbitror(object):
             # Sent the message over the bus
             print(f'\tsending {msg}')
             self.send_msg(msg.get_repr())
+            # usleep(self._time_quantum)
 
     def list_macrocycle(self):
         '''
