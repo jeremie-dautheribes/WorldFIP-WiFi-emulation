@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from time import sleep
+from math import gcd
+from functools import reduce
 from itertools import cycle
 from frame import ID_Dat
 
@@ -43,9 +45,11 @@ class BusArbitror(object):
 
     @staticmethod
     def cycles_from_table(table):
-        return (100, 1000)
-        for i, p in table.items():
-            pass
+        '''Return the microcycle and macrocycle from a period table'''
+        def lcm(numbers):
+            '''Helper to compute the Least Commom Multiple'''
+            return reduce(lambda a, b: a * b // gcd(a, b), numbers)
+        return (min(table.values()), lcm(table.values()))
 
 
 if __name__ == '__main__':
