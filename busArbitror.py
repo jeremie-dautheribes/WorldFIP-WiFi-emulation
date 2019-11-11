@@ -3,7 +3,7 @@ from time import sleep
 from math import gcd
 from functools import reduce
 from itertools import cycle
-from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
+from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REUSEPORT
 from frame import ID_Dat
 
 
@@ -18,6 +18,7 @@ class BusArbitror(object):
     def run_server(self, port=5432):
         self._sock = socket(AF_INET, SOCK_DGRAM)
         self._sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        self._sock.setsockopt(SOL_SOCKET, SO_REUSEPORT, 1)
         self._sock.settimeout(0)
         self._sock.bind(('', port))
         self._port = port
@@ -27,10 +28,7 @@ class BusArbitror(object):
 
     def do_loop(self):
         '''
-        Loop over all messages
-
-        This 1st version simply print the messages, tgit he next version should
-        actually send the frame to the network.
+        Loop over all messages and schedule IDs according to the table
         '''
         t2 = None
         for t, msg in cycle(self.list_macrocycle()):
