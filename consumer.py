@@ -33,7 +33,7 @@ class Consumer(object):
 
     def recv_rp_dat(self):
         old_to = self._sock.gettimeout()
-        self._sock.settimeout(RETURN_TIME)
+        self._sock.settimeout(RETURN_TIME / 1000 / 1000)
         try:
             data, addr = self._sock.recvfrom(RP_Dat.size())
         finally:
