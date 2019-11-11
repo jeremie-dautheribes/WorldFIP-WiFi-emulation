@@ -7,6 +7,9 @@ from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REU
 from frame import ID_Dat
 
 
+def usleep(sec):
+    sleep(sec / 1000 / 1000)
+
 class BusArbitror(object):
     '''
     Représente un arbitre de bus du protocol World-FIP
@@ -34,11 +37,11 @@ class BusArbitror(object):
         for t, msg in cycle(self.list_macrocycle()):
             if t != t2:
                 t2 = t
-                sleep(bus._microcycle / 1000)
-                print(f't = {t}ms')
+                usleep(self._microcycle)
+                print(f't = {t/1000}ms')
 
             # Sent the message over the bus
-            print('\t', msg.__dict__)
+            print(f'\tsending {msg}')
             self.send_msg(msg.get_repr())
 
     def list_macrocycle(self):
@@ -64,11 +67,11 @@ class BusArbitror(object):
 
 if __name__ == '__main__':
     bus = BusArbitror({
-        101: 100,
-        102: 200,
-        103: 500,
-        104: 100,
-        105: 200,
+        101: 100 * 1000,
+        102: 200 * 1000,
+        103: 500 * 1000,
+        104: 100 * 1000,
+        105: 200 * 1000,
     })
     bus.run_server()
     bus.do_loop()
