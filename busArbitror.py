@@ -3,6 +3,7 @@ from time import sleep
 from math import gcd
 from functools import reduce
 from itertools import cycle
+from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
 from frame import ID_Dat
 
 
@@ -13,6 +14,16 @@ class BusArbitror(object):
     def __init__(self, table={}):
         self._table = table
         self._microcycle, self._macrocycle = self.cycles_from_table(table)
+
+    def run_server(self, port=5432):
+        self._sock = socket(AF_INET, SOCK_DGRAM)
+        self._sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        self._sock.settimeout(0)
+        self._sock.bind(('', port))
+        self._port = port
+
+    def send_msg(self, msg: bytes):
+        self._sock.sendto(msg, ('<broadcast>', self._port))
 
     def do_loop(self):
         '''
@@ -28,8 +39,9 @@ class BusArbitror(object):
                 sleep(bus._microcycle / 1000)
                 print(f't = {t}ms')
 
-            # Do the job
+            # Sent the message over the bus
             print('\t', msg.__dict__)
+            self.send_msg(msg.get_repr())
 
     def list_macrocycle(self):
         '''
@@ -60,4 +72,5 @@ if __name__ == '__main__':
         104: 100,
         105: 200,
     })
+    bus.run_server()
     bus.do_loop()
