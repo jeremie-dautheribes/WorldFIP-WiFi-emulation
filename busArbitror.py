@@ -7,8 +7,12 @@ from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REU
 from frame import ID_Dat
 
 
-def usleep(sec):
-    sleep(sec / 1000 / 1000)
+def msleep(sec):
+    sleep(sec / 1000)
+
+
+RETURN_TIME = 50
+
 
 class BusArbitror(object):
     '''
@@ -17,7 +21,6 @@ class BusArbitror(object):
     def __init__(self, table={}):
         self._table = table
         self._microcycle, self._macrocycle = self.cycles_from_table(table)
-        self._time_quantum = 1000
 
     def run_server(self, port=5432):
         self._sock = socket(AF_INET, SOCK_DGRAM)
@@ -38,13 +41,13 @@ class BusArbitror(object):
         for t, msg in cycle(self.list_macrocycle()):
             if t != t2:
                 t2 = t
-                usleep(self._microcycle)
-                print(f't = {t/1000}ms')
+                msleep(self._microcycle)
+                print(f't = {t}ms')
 
             # Sent the message over the bus
             print(f'\tsending {msg}')
             self.send_msg(msg.get_repr())
-            usleep(self._time_quantum)
+            msleep(3 * RETURN_TIME)
 
     def list_macrocycle(self):
         '''
@@ -69,11 +72,11 @@ class BusArbitror(object):
 
 if __name__ == '__main__':
     bus = BusArbitror({
-        101: 100 * 1000,
-        102: 200 * 1000,
-        103: 500 * 1000,
-        104: 100 * 1000,
-        105: 200 * 1000,
+        101: 100 * 10,
+        102: 200 * 10,
+        103: 500 * 10,
+        104: 100 * 10,
+        105: 200 * 10,
     })
     bus.run_server()
     bus.do_loop()

@@ -5,11 +5,11 @@ from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REU
 from frame import RP_Dat, ID_Dat
 
 
-def usleep(sec):
-    sleep(sec / 1000 / 1000)
+def msleep(sec):
+    sleep(sec / 1000)
 
 
-RETURN_TIME = 10
+RETURN_TIME = 50
 
 
 class Consumer(object):
@@ -34,7 +34,7 @@ class Consumer(object):
 
     def recv_rp_dat(self):
         old_to = self._sock.gettimeout()
-        self._sock.settimeout(RETURN_TIME / 1000 / 1000)
+        self._sock.settimeout(2 * RETURN_TIME / 1000)
         try:
             data, addr = self._sock.recvfrom(RP_Dat.size())
         finally:
@@ -56,7 +56,7 @@ class Consumer(object):
                 continue
 
             # 4. Get the object from the bus
-            usleep(RETURN_TIME)
+            msleep(RETURN_TIME)
             try:
                 ok, rp_dat = self.recv_rp_dat()
             except:
