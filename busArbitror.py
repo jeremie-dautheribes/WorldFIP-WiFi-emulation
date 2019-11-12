@@ -44,7 +44,7 @@ class BusArbitror(object):
             # Sent the message over the bus
             print(f'\tsending {msg}')
             self.send_msg(msg.get_repr())
-            # usleep(self._time_quantum)
+            usleep(self._time_quantum)
 
     def list_macrocycle(self):
         '''

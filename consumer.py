@@ -24,8 +24,9 @@ class Consumer(object):
         self._sock.bind(('', port))
         self._port = port
 
-    def recv_id_dat(self):
-        data, addr = self._sock.recvfrom(ID_Dat.size())
+    def recv_id_dat(self, data=None):
+        if not data:
+            data, addr = self._sock.recvfrom(ID_Dat.size())
         try:
             return ID_Dat.from_repr(data)
         except:
@@ -40,11 +41,12 @@ class Consumer(object):
             self._sock.settimeout(old_to)
 
         try:
-            return RP_Dat.from_repr(data)
+            return (True, RP_Dat.from_repr(data))
         except:
-            return None
+            return (False, data)
 
     def do_loop(self):
+        data = None
         while True:
             # 1. Get the ID_Dat, use the existing one if exists
             id_dat = self.recv_id_dat()
@@ -55,18 +57,16 @@ class Consumer(object):
 
             # 4. Get the object from the bus
             usleep(RETURN_TIME)
-            rp_dat, to = None, False
-            while not rp_dat:
-                try:
-                    rp_dat = self.recv_rp_dat()
-                except:
-                    print('timeout reached, ignoring')
-                    to = True
-                    break
-            if to:
+            try:
+                ok, rp_dat = self.recv_rp_dat()
+            except:
+                print('timeout reached, ignoring')
+                continue
+            if not ok:
+                data = rp_dat
                 continue
 
-            # 4.5 I worked
+            # 4.5 It worked
             print(f'received: {rp_dat}')
 
 
